@@ -2,14 +2,15 @@ package task
 
 import (
 	"fmt"
-	"icode.baidu.com/baidu/tieba-go-user-base/ub-golib/utillib/cmap"
-	"icode.baidu.com/baidu/tieba-go-user-base/ub-golib/utillib/pool"
 	"log"
 	"runtime/debug"
 	"sort"
 	"strconv"
 	"sync/atomic"
 	"time"
+
+	cmap "github.com/orcaman/concurrent-map/v2"
+	"github.com/panjf2000/ants"
 )
 
 const DEFALUT_TASK_TIMEOUT = 1500
@@ -242,8 +243,8 @@ type TaskExecute struct {
 
 	isCancel bool
 
-	logMap     cmap.ConcurrentMap
-	warnLogMap cmap.ConcurrentMap
+	logMap     cmap.ConcurrentMap[string, string]
+	warnLogMap cmap.ConcurrentMap[string, string]
 	hasLog     bool
 	hasWarnLog bool
 
@@ -273,8 +274,8 @@ func CreateExecute() *TaskExecute {
 	execute.isDone = false
 	execute.isCancel = false
 	execute.isError = false
-	execute.logMap = cmap.New()
-	execute.warnLogMap = cmap.New()
+	execute.logMap = cmap.New[string]()
+	execute.warnLogMap = cmap.New[string]()
 	execute.hasLog = false
 	execute.hasWarnLog = false
 	execute.printExecuteStruct = false
@@ -409,15 +410,14 @@ func (execute *TaskExecute) StatisticTask(taskFunc func(task *TaskNode)) {
 /**
  *  日志排序
  */
-func (execute *TaskExecute) sortLogPrint(logMap cmap.ConcurrentMap, logFunc func(log string)) {
+func (execute *TaskExecute) sortLogPrint(logMap cmap.ConcurrentMap[string, string], logFunc func(log string)) {
 	m := make(map[string]string)
 	var keys []string
-	logMap.IterUnsafeCb(func(key string, v interface{}) {
-		value, ok := v.(string)
-		if ok {
-			m[key] = value
-			keys = append(keys, key)
-		}
+
+	logMap.IterCb(func(key string, v string) {
+		m[key] = v
+		keys = append(keys, key)
+
 	})
 
 	sort.Strings(keys)
@@ -539,10 +539,7 @@ func (this *TaskExecute) DoExecute() error {
 	return nil
 }
 
-/*
-*
-线性执行器
-*/
+// 线性执行器
 func (this *TaskExecute) DoExecuteWrap() {
 	defer func() {
 		if err := recover(); nil != err {
@@ -556,14 +553,12 @@ func (this *TaskExecute) DoExecuteWrap() {
 		}
 	}
 	this.queue.Offer(this.root)
-	//fmt.Println(this.root)
 	this.logDebug("offer root")
 	for !this.queue.IsEmpty() {
 		visit := this.queue.Poll().(*TaskNode)
 		this.executeList.Offer(visit)
 		//不存在并发
 		this.undoNumber = this.undoNumber + 1
-		//fmt.Println("visit:", visit.GetTaskName())
 		this.logDebug("visit:", visit.GetTaskName())
 		//this.queue.Poll()
 
@@ -591,12 +586,10 @@ func (this *TaskExecute) DoExecuteWrap() {
 				break
 			}
 
-			//fmt.Println("isRootRun:", isRootRun)
 			if isRootRun != 1 {
 				for {
 					select {
 					case ready := <-this.readyChan:
-						//fmt.Printf("ready to run: %s\n", ready)
 						this.logDebug("ready to run: %s\n", ready)
 					}
 					break

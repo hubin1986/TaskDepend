@@ -2,19 +2,18 @@ package task
 
 import (
 	"fmt"
+	"os"
 	"time"
 )
 
 type TaskA struct {
 }
 
-//方法
 func (p *TaskA) Execute(node *TaskNode) bool {
 	time.Sleep(100 * time.Millisecond)
 	return true
 }
 
-//接口
 func (p *TaskA) GetResult() interface{} {
 	return "TaskA"
 }
@@ -23,7 +22,7 @@ type TaskB struct {
 	result string
 }
 
-//方法
+// 方法
 func (p *TaskB) Execute(node *TaskNode) bool {
 	time.Sleep(500 * time.Millisecond)
 	p.result = "B"
@@ -31,7 +30,7 @@ func (p *TaskB) Execute(node *TaskNode) bool {
 	return true
 }
 
-//接口
+// 接口
 func (p *TaskB) GetResult() interface{} {
 	return p.result
 }
@@ -40,7 +39,7 @@ type TaskFail struct {
 	result string
 }
 
-//方法
+// 方法
 func (p *TaskFail) Execute(node *TaskNode) bool {
 	time.Sleep(500 * time.Millisecond)
 	p.result = "B"
@@ -48,7 +47,7 @@ func (p *TaskFail) Execute(node *TaskNode) bool {
 	return false
 }
 
-//接口
+// 接口
 func (p *TaskFail) GetResult() interface{} {
 	return p.result
 }
@@ -56,13 +55,13 @@ func (p *TaskFail) GetResult() interface{} {
 type TaskC struct {
 }
 
-//方法
+// 方法
 func (p *TaskC) Execute(node *TaskNode) bool {
 	time.Sleep(100 * time.Millisecond)
 	return true
 }
 
-//接口
+// 接口
 func (p *TaskC) GetResult() interface{} {
 	return "TaskC"
 }
@@ -70,15 +69,15 @@ func (p *TaskC) GetResult() interface{} {
 type TaskD struct {
 }
 
-//方法
+// 方法
 func (p *TaskD) Execute(node *TaskNode) bool {
 	time.Sleep(100 * time.Millisecond)
 	result := node.GetResutlt("TaskB")
-	fmt.Println("resutB:%v", result)
+	fmt.Fprintln(os.Stdout, []any{"resutB:%v", result}...)
 	return true
 }
 
-//接口
+// 接口
 func (p *TaskD) GetResult() interface{} {
 	return "TaskD"
 }
@@ -86,17 +85,18 @@ func (p *TaskD) GetResult() interface{} {
 type TaskE struct {
 }
 
-//方法
+// 方法
 func (p *TaskE) Execute(node *TaskNode) bool {
 	time.Sleep(100 * time.Millisecond)
 	result := node.GetResutlt("taskD")
 	taskD := node.GetWaitNode("taskD")
-	fmt.Println("resultD:%v:", result)
-	fmt.Println("taskD time:%d:", taskD.GetExecuteTime())
+	fmt.Fprintln(os.Stdout, []any{"resultD:%v:", result}...)
+	var a []any = []any{"taskD time:%d:", taskD.GetExecuteTime()}
+	fmt.Fprintln(os.Stdout, a...)
 	return true
 }
 
-//接口
+// 接口
 func (p *TaskE) GetResult() interface{} {
 	return "TaskE"
 }

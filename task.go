@@ -303,7 +303,7 @@ func (execute *TaskExecute) NewPool(poolSize int) {
 	poolSize = poolSize + MINI_POOL_SIZE
 
 	execute.poolSize = poolSize
-	pool, error := ants.NewPool(poolSize, ants.WithExpiryDuration(5*time.Second)) //新建一个pool对象，其他同上
+	pool, error := ants.NewPool(poolSize) //新建一个pool对象，其他同上
 	if nil != error {
 		execute.pool = pool
 	}

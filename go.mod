@@ -1,4 +1,4 @@
-module TaskDepend
+module github.com/hubin1986/taskDepend/v1
 
 go 1.22.1
 

@@ -1,10 +1,27 @@
-# Summary
+# task depend
 A task execution framework based on Directed Acyclic Graph (DAG), which automatically handles complex 
 task relationships through a simple API and provides comprehensive error handling, timeout handling, 
 and coroutine pool processing mechanisms
 
+## usage
 
-# Quick Start    
+Import the package:
+
+```go
+import (
+	"github.com/hubin1986/TaskDepend"
+)
+
+```
+
+```bash
+go get "github.com/hubin1986/TaskDepend"
+```
+
+The package is now imported under the "task" namespace.
+
+
+# example   
  B depend A  
  B depend C  
  D depend B  

@@ -9,13 +9,13 @@ Import the package:
 
 ```go
 import (
-	"github.com/hubin1986/TaskDepend"
+	"github.com/hubin1986/TaskDepend/v1"
 )
 
 ```
 
 ```bash
-go get "github.com/hubin1986/TaskDepend"
+go get "github.com/hubin1986/TaskDepend/v1"
 ```
 
 The package is now imported under the "task" namespace.
